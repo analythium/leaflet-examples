@@ -18,9 +18,6 @@ plot(r)
 pal <- hcl.colors(25, "spectral", rev = TRUE)
 plot(r, col = pal)
 
-#' Internals
-str(r)
-
 #' Create a 10x coarser version & plot it
 r10 <- aggregate(r, 10)
 plot(r10, col = pal)
@@ -51,14 +48,14 @@ plot(r10)
 #' https://rspatial.org/terra/pkg/index.html
 library(terra)
 
-r <- rast("amro1k.tif")
+rt <- rast("amro1k.tif")
 
-print(r)
+print(rt)
 
-plot(r)
+plot(rt)
 
 #' Multiple layers
-rs <- c(r, r*2, r*-1)
+rs <- c(rt, rt * 2, rt * -1)
 dim(rs)
 nlyr(rs)
 res(rs)
@@ -68,13 +65,14 @@ plot(rs)
 hist(rs)
 density(rs)
 
-persp(r)
-contour(r)
+persp(rt)
+contour(rt)
 
 
 #' {leaflet}
 #' Create Interactive Web Maps with the JavaScript 'Leaflet' Library
 #' https://rstudio.github.io/leaflet/
+library(leaflet)
 
 #' Blank page
 leaflet()
@@ -100,6 +98,8 @@ leaflet(data = quakes[1:20,]) %>% addTiles() %>%
 pal <- colorNumeric(
   palette = "viridis", 
   domain = quakes$mag)
+#' Read about the arguments
+?colorNumeric
 
 leaflet(quakes) |>
   addTiles() |>
@@ -128,11 +128,14 @@ pal <- colorNumeric(
 #' Add the raster to the map
 m <- leaflet() |>
   addTiles() |>
-  addRasterImage(r, colors = pal, opacity = 0.8)
+  addRasterImage(r, 
+    colors = pal, 
+    opacity = 0.8)
 
 #' Add legend
 m |>
-  addLegend(pal = pal, values = values(r),
+  addLegend(pal = pal, 
+    values = values(r),
     title = "Abundance")
 
 #' {tiler}
@@ -140,8 +143,7 @@ m |>
 #' https://cran.r-project.org/web/packages/tiler/vignettes/tiler-intro.html
 
 #' Install tiler dependencies
-
-
+#'
 # sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
 # sudo apt-get update
 # sudo apt-get install gdal-bin
@@ -156,7 +158,6 @@ m |>
 # apt install r-cran-rgdal r-cran-raster r-cran-png
 # R -q -e 'install.packages("tiler")'
 
-
 library(tiler)
 
 ## finding 1 km resolution raster files
@@ -167,12 +168,24 @@ tile(
   tiles = "tiles",
   zoom = "0-7",
   col = pal)
+# Reprojecting raster...
+# Coloring raster...
+# Preparing for tiling...
+# [1] "/var/folders/wm/3rsg6gxd2r16r5thmb03nt7w0000gn/T//RtmpyBOtOy"
+# Creating tiles. Please wait...
+# Generating Base Tiles:
+# 0...10...20...30...40...50...60...70...80...90...100
+# Generating Overview Tiles:
+# 0...10...20...30...40...50...60...70...80...90...100
+# Creating tile viewer...
+# Complete.
+#'
 #' now explore the contents of the tiles directory
 #' check the xml file and preview.html
 
 #' TMS tiles from server:
 #' https://wbi-nwt.analythium.app/api/v1/public/wbi-nwt/elements/bird-amro/landr-scfm-v4/2011/
-tiles <- paste0("https://wbi-nwt.analythium.app/api/v1/public/"
+tiles <- paste0("https://wbi-nwt.analythium.app/api/v1/public/",
   "wbi-nwt/elements/bird-amro/landr-scfm-v4/2011/",
   "tiles/{z}/{x}/{-y}.png")
 
@@ -194,7 +207,9 @@ leaflet::leaflet() |>
 #' What if we want to change the palette?
 #' Well...
 
-library(leaflet)
+#' {leafem}
+#' 'leaflet' Extensions for 'mapview'
+#' https://r-spatial.github.io/leafem/
 library(leafem)
 
 leaflet() |>
@@ -208,7 +223,7 @@ leaflet() |>
         domain = c(0, 0.62),
         na.color = "transparent"))
 
-#' The issue was a tricky one:
+#' The issue was a tricky one: floating point representation of -Inf
 #' https://github.com/r-spatial/leafem/issues/54
 
 #' {stars}
@@ -237,3 +252,13 @@ leaflet() |>
 
 #' Check out the Shiny app that uses GeoTIFF:
 shiny::runApp("palettes.R")
+
+#' Discussion points:
+#' 
+#' - What are the advantages disadvantages of 
+#'   TMS vs GeoTIFF in interactive context?
+#' - What can we tell about situations where
+#'   comparing multiple rasters is needed?
+
+# unlink("tiles", recursive = TRUE)
+# unlink("preview.html")
