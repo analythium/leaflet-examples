@@ -160,7 +160,6 @@ m |>
 
 library(tiler)
 
-## finding 1 km resolution raster files
 pal <- grDevices::hcl.colors(101, "spectral", rev = TRUE)
 
 tile(
@@ -182,6 +181,12 @@ tile(
 #'
 #' now explore the contents of the tiles directory
 #' check the xml file and preview.html
+#' 
+#' Also see: 
+#' https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification
+#' https://www.google.com/search?q=tms+tiles
+?tile
+#' explain {z}/{x}/{y}.png vs. {z}/{x}/{-y}.png
 
 #' TMS tiles from server:
 #' https://wbi-nwt.analythium.app/api/v1/public/wbi-nwt/elements/bird-amro/landr-scfm-v4/2011/
@@ -260,5 +265,46 @@ shiny::runApp("palettes.R")
 #' - What can we tell about situations where
 #'   comparing multiple rasters is needed?
 
+#' What if I told you that
+#' you can have the best of both worlds?
+#' 
+#' COG = Cloud Optimized GeoTIFF
+#' https://www.cogeo.org/
+#' https://r-spatial.org/r/2021/04/23/cloud-based-cubes.html
+#' https://gdal.org/drivers/raster/cog.html
+
+#' Can't write COGs from R:
+#' https://tmieno2.github.io/R-as-GIS-for-Economists/read-write-stars.html
+sf::st_drivers(what = "raster")["COG",]
+
+#' Following https://geoexamples.com/other/2019/02/08/cog-tutorial.html/
+#' Save GeoTIFF with right NA coding
+# r <- raster("amro1k.tif")
+# s <- st_as_stars(r)
+# write_stars(s, "amro1k-over.tif", options = c("COMPRESS=LZW"))
+#' Create overviews
+# gdaladdo -r average amro1k-over.tif 2 4 8 16
+#' Tiled and compressed GeoTIFF
+# gdal_translate amro1k-over.tif amro1k-cog.tif -co COMPRESS=LZW -co TILED=YES
+
+#' Still experimental: leafem:::addCOG()
+#' https://github.com/r-spatial/mapview/issues/400
+
+leaflet() |>
+  addProviderTiles("Esri.WorldImagery") |>
+  addGeotiff(
+    url = "https://peter.solymos.org/testapi/amro1k-cog.tif",
+    project = FALSE,
+    opacity = 0.8,
+    autozoom = FALSE,
+    colorOptions = colorOptions(
+        palette = hcl.colors(50, palette = "inferno"), 
+        domain = c(0, 0.62),
+        na.color = "transparent")) |>
+  leaflet::setView(-120, 65, 10)
+
+#' Cleanup
 # unlink("tiles", recursive = TRUE)
 # unlink("preview.html")
+# unlink("amro1k-over.tif")
+# unlink("amro1k-cog.tif")
