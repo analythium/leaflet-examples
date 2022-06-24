@@ -131,6 +131,11 @@ m <- leaflet() |>
   addRasterImage(r, 
     colors = pal, 
     opacity = 0.8)
+m
+
+# m <- leaflet()
+# m <- addTiles(m)
+# m <- addRasterImage(m, r, ...)
 
 #' Add legend
 m |>
@@ -241,7 +246,7 @@ print(s)
 
 plot(s)
 
-# write_stars(s, f, options = c("COMPRESS=LZW"))
+# write_stars(s, "amro1k-stars.tif", options = c("COMPRESS=LZW"))
 
 #' Now back to leaflet: yess!
 leaflet() |>
