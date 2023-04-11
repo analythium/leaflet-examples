@@ -40,4 +40,5 @@ vignettes/*.pdf
 
 tiles
 preview.html
-amro1k*.tif
+amro1k*.tif*
+app

@@ -292,6 +292,13 @@ sf::st_drivers(what = "raster")["COG",]
 #' Tiled and compressed GeoTIFF
 # gdal_translate amro1k-over.tif amro1k-cog.tif -co COMPRESS=LZW -co TILED=YES
 
+#' Use the -ro flag for external overviews
+#' write_stars(s, "amro1k-over-ext.tif", options = c("COMPRESS=LZW"))
+# gdaladdo -r average -ro amro1k-over-ext.tif 2 4 8 16
+# gdal_translate amro1k-over-ext.tif amro1k-cog-ext.tif -co COMPRESS=LZW
+# gdaladdo -r average -ro amro1k-cog-ext.tif 2 4 8 16
+
+
 #' Still experimental: leafem:::addCOG()
 #' https://github.com/r-spatial/mapview/issues/400
 
